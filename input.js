@@ -1,7 +1,9 @@
 /**
- * @YoPlus
- * 变量：elmck: 必填，账号cookie
- * cron: 13 0,8,10,14,18,22 * * *
+ * @平行绳 飞机频道：https://t.me/tigerorrose
+ * 变量：elmck: 必填，账号cookie，短信登录面板项目地址：https://github.com/funaihui/eleWeb
+ * 定时随意，每天跑一遍就可以
+ * cron: 10,11,12,13,17,19,21 * * *
+ * 2030.8.11 更新：从乐园币提取抽来，作为单独的脚本
  */
 
 const $ = new Env('饿了么饿了个饿');
