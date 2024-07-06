@@ -2,9 +2,9 @@
  * @平行绳 飞机频道：https://t.me/tigerorrose
  * 变量：elmck: 必填，账号cookie，短信登录面板项目地址：https://github.com/funaihui/eleWeb
  * 卡密地址：http://card.94wan.fun:90
- * cron: 40 2,3,5,8,9,11 * * *
+ * cron: 11 7 * * *
  * 2023.7.14 首次发布
- * 2023.8.22 修复没有对应关卡问题
+ * 2023.8.22 修复没有对应关卡问
  */
 const $ = new Env('饿了么美食摊');
 
