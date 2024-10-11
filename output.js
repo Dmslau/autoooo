@@ -1,138 +1,236 @@
-//Wed Sep 25 2024 07:52:53 GMT+0000 (Coordinated Universal Time)
+//Fri Oct 11 2024 08:05:56 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-const {
-  sign,
-  getToken,
-  wait,
-  checkCk,
-  validateCarmeWithType,
-  User_Agent,
-  getCookies,
-  checkCarmeCount,
-  getUserInfo,
-  tryCatchPromise
-} = require("./common.js");
-const request = require("request");
-const GAME_TYEP = 2;
-let CookieEles = getCookies();
-const kami = process.env.ELE_CARME;
-async function fridensHelper(_0x44fa34, _0x3ca75c) {
-  _0x44fa34 = await checkCk(_0x44fa34);
-  const _0x51fd6d = {
-    "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-    Cookie: _0x44fa34,
-    "User-Agent": User_Agent
-  };
-  const _0x9900e7 = new Date().getTime();
-  const _0x4ae8f4 = 12574478;
-  const _0x5f17d6 = {
-    sceneCode: "RECOMMEND_SUPPORT",
-    params: "{\"ownerId\":\"" + _0x3ca75c + "\",\"fromOfficialAccount\":false,\"channel\":\"1\",\"referUserId\":\"\",\"restaurantId\":\"\",\"referCode\":\"\",\"referChannelCode\":\"\",\"referChannelType\":\"\",\"fromWeChatApp\":false,\"bizType\":\"1\",\"v\":\"4.3\",\"chInfo\":\"ch_app_chsub_Photo\",\"from\":\"hjb_app_xbb\",\"actId\":\"1\",\"longitude\":\"120.22057268768549\",\"latitude\":\"30.17862595617771\"}"
-  };
-  var _0x5ea933 = "data=" + encodeURIComponent(JSON.stringify(_0x5f17d6));
-  const _0x3f65ea = getToken(_0x44fa34),
-    _0x59ecd8 = _0x3f65ea.split("_")[0];
-  const _0x3e43d = await sign(_0x59ecd8 + "&" + _0x9900e7 + "&" + _0x4ae8f4 + "&" + JSON.stringify(_0x5f17d6), kami);
-  const _0x5f2fe9 = {
-    url: "https://mtop.ele.me/h5/mtop.alibaba.o2o.alsc.union.coupon.track/1.0/?jsv=2.6.1&appKey=12574478&&ttid=1601274958480%40eleme_android_10.14.3&t=" + _0x9900e7 + "&sign=" + _0x3e43d + "&api=mtop.alibaba.o2o.alsc.union.coupon.track",
-    method: "POST",
-    headers: _0x51fd6d,
-    body: _0x5ea933
-  };
-  return tryCatchPromise(_0x3646fc => {
-    request(_0x5f2fe9, async (_0x540129, _0x40bcb1, _0x52637b) => {
-      if (!_0x540129 && _0x40bcb1.statusCode == 200) {
-        try {
-          const _0x6c9838 = JSON.parse(_0x52637b);
-          _0x3646fc(_0x6c9838);
-        } catch (_0x53998e) {
-          console.log(_0x53998e);
-          _0x3646fc(null);
+const $ = new Env("益禾堂"),
+  axios = require("axios"),
+  axiosRetry = require("axios-retry").default,
+  {
+    sendNotify
+  } = require("./sendNotify"),
+  SyncRequest = require("sync-request");
+let notifyStr = "";
+var ua = "";
+(async () => {
+  axiosRetry(axios, {
+    retries: 3
+  });
+  const _0x533aea = checkVersion("yht.js", "69185a59f59e2339d48af04a7894f89a");
+  let _0x540f5a = [];
+  _0x533aea && (_0x540f5a = _0x533aea.split(","));
+  const _0x5df230 = process.env.yht_ck,
+    _0x43c48e = process.env.yht_showinviteId;
+  if (!_0x5df230) {
+    logAndNotify("请先设置环境变量 yht_ck");
+    return;
+  }
+  const _0x1decaf = !!_0x43c48e;
+  let _0x100522 = _0x5df230.replaceAll("&", "\n").split("\n");
+  for (let _0x51e3b3 = 0; _0x51e3b3 < _0x100522.length; _0x51e3b3++) {
+    ua = generateUserAgent();
+    const _0xda36eb = _0x100522[_0x51e3b3],
+      _0x3ee26d = await sendGetRequest("https://webapi.qmai.cn/web/catering/crm/personal-info", _0xda36eb);
+    if (!_0x3ee26d.data.status) {
+      logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 登录失败☹");
+      continue;
+    }
+    logAndNotify("🧐" + _0x3ee26d.data.data.mobilePhone + "🧐");
+    const _0x26ff60 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/nurture/takePartInNurture", _0xda36eb, {
+      activityId: "1025694534292430849",
+      appid: "wx4080846d0cec2fd5"
+    });
+    _0x26ff60.data.status ? (logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 开启种树成功"), logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 userId=【" + _0x26ff60.data.data.userId + "】")) : logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 忽略此提示【" + _0x26ff60.data.message + "】");
+    const _0x226ff9 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/task/taskInfo", _0xda36eb, {
+      activityId: "1025694534292430849",
+      appid: "wx4080846d0cec2fd5"
+    });
+    logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 被助力次数:【" + _0x226ff9.data.data.dailyInviteNum + "】");
+    const _0x443d74 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/nurture/stageInfo", _0xda36eb, {
+      activityId: "1025694534292430849",
+      appid: "wx4080846d0cec2fd5"
+    });
+    let _0x342cb1 = 0;
+    if (_0x443d74.data.status) {
+      const _0x284318 = _0x443d74.data.data;
+      if (_0x284318.level === 3) {
+        logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 当前是【" + _0x284318.name + "】 可以领取奖励了");
+      } else {
+        _0x342cb1 = _0x284318.upgradeThreshold - _0x284318.nutrientUsed;
+        logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 当前是【" + _0x284318.name + "】, 再施肥【" + _0x342cb1 + "】次 成为【" + _0x284318.nextName + "】");
+      }
+    }
+    const _0x5530d1 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/nurture/activityInfo", _0xda36eb, {
+        activityId: "1025694534292430849",
+        appid: "wx4080846d0cec2fd5"
+      }),
+      _0x5c00e6 = _0x5530d1.data.data.nurtureStageVo;
+    logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 剩余肥料【" + _0x5c00e6.nutrientRemaining + "】");
+    if (_0x342cb1 < _0x5c00e6.nutrientRemaining) {
+      logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 本次只需要施肥【" + _0x342cb1 + "】次即可完成任务，请及时领取奖励！！！！！！！！！！！！！！！");
+    } else {
+      _0x342cb1 = _0x5c00e6.nutrientRemaining;
+    }
+    for (let _0x130b5a = 0; _0x130b5a < _0x342cb1; _0x130b5a++) {
+      const _0x5d48c5 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/nurture/add/nutrient", _0xda36eb, {
+        activityId: "1025694534292430849",
+        appid: "wx4080846d0cec2fd5"
+      });
+      _0x5d48c5.data.status ? logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 施肥【" + (_0x130b5a + 1) + "】次成功") : logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 施肥【" + (_0x130b5a + 1) + "】次失败");
+    }
+    const _0x43bd3d = new Date().getDay();
+    if (_0x43bd3d === 2) {
+      const _0x55a7a8 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/receive/takePartInReceive", _0xda36eb, {
+        activityId: "1038508490954362881",
+        timestamp: "",
+        signature: "",
+        qzGtd: "",
+        gdtVid: "",
+        data: "",
+        version: 1,
+        appid: "wx4080846d0cec2fd5"
+      });
+      _0x55a7a8.data.status ? logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 领卷成功") : logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 领卷失败，可以忽略: " + _0x55a7a8.data.message);
+    }
+    const _0x7d7639 = await sendPostRequest("https://webapi.qmai.cn/web/catering/crm/coupon/list", _0xda36eb, {
+      pageNo: 1,
+      pageSize: 1000,
+      useStatus: 0,
+      appid: "wx4080846d0cec2fd5"
+    });
+    if (_0x7d7639.data.status) {
+      logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 优惠卷总数量: " + _0x7d7639.data.data.totalNum);
+      for (const _0x4899c1 of _0x7d7639.data.data.data) {
+        logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 优惠卷: " + _0x4899c1.title + " 有效期【" + _0x4899c1.expireDesc + "】");
+      }
+    } else {
+      logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 获取优惠卷失败: " + _0x7d7639.data.message);
+    }
+    logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 开始助力其他人");
+    for (const _0x5b526d of _0x540f5a) {
+      const _0x1b2c72 = await sendPostRequest("https://webapi.qmai.cn/web/cmk-center/task/userHelp", _0xda36eb, {
+        activityId: "1025694534292430849",
+        appid: "wx4080846d0cec2fd5",
+        inviteUserId: _0x5b526d
+      });
+      if (_0x1b2c72.data.status) {
+        if (_0x1decaf) {
+          logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 【" + _0x5b526d + "】 助力成功");
+        } else {
+          logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 助力成功");
         }
       } else {
-        _0x3646fc(null);
+        _0x1decaf ? logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 【" + _0x5b526d + "】 助力失败: " + _0x1b2c72.data.message) : logAndNotify("账号【" + (_0x51e3b3 + 1) + "】 助力失败: " + _0x1b2c72.data.message);
+        if (_0x1b2c72.data.message === "今日助力次数已达上限") {
+          break;
+        }
       }
-    });
-  });
-}
-function getRandom(_0xf39232, _0x3b47cc) {
-  var _0x378d8b = Math.floor(Math.random() * (_0x3b47cc - _0xf39232 + 1) + _0xf39232);
-  return _0x378d8b;
-}
-async function start() {
-  const _0x5828a4 = process.env.ELE_FANLI_TIME;
-  await validateCarmeWithType(kami, 1);
-  const _0x37acb9 = process.env.ownerId;
-  if (!_0x37acb9) {
-    console.log("请先配置环境变量ownerId！！");
-    process.exit(0);
-  }
-  for (let _0x1208f8 = 0; _0x1208f8 < CookieEles.length; _0x1208f8++) {
-    let _0x164c60 = CookieEles[_0x1208f8];
-    _0x164c60 = await checkCk(_0x164c60, _0x1208f8);
-    if (!_0x164c60) {
-      continue;
-    }
-    let _0x43401a = await getUserInfo(_0x164c60);
-    if (!_0x43401a.username) {
-      console.log("第", _0x1208f8 + 1, "账号失效！请重新登录！！！😭");
-      continue;
-    }
-    const _0x52ce8f = _0x43401a.user_id;
-    await checkCarmeCount(kami, _0x52ce8f, GAME_TYEP);
-    console.log("******开始【饿了么账号", _0x1208f8 + 1, "】", _0x43401a.username, "*********");
-    res = await fridensHelper(_0x164c60, _0x37acb9);
-    if (res.data.code == 0) {
-      if (res.data.message == "SUCCESS") {
-        amount = res.data.data.couponAmount / 100;
-        couponCondition = res.data.data.couponCondition / 100;
-        console.log("第", _0x1208f8 + 1, "账号,邀请成功", "被邀请人领取的红包为:满" + couponCondition + "减" + amount + "元");
-      }
-    } else {
-      console.log(res.data.message || "邀请失败");
-    }
-    if (_0x5828a4 && _0x5828a4.indexOf("-") != -1) {
-      console.log("防止黑号延时" + _0x5828a4 + "秒");
-      const _0x2c394a = _0x5828a4.split("-");
-      await wait(getRandom(_0x2c394a[0], _0x2c394a[1]));
-    } else {
-      console.log("防止黑号延时10-30秒");
-      await wait(getRandom(10, 30));
     }
   }
-  process.exit(0);
+})().catch(_0x2b76b8 => {
+  logAndNotify(_0x2b76b8);
+}).finally(() => {
+  sendNotify("益禾堂", notifyStr);
+  $.done();
+});
+async function sendPostRequest(_0x164e76, _0x1334c1, _0x147c4d) {
+  try {
+    await delay(500);
+    const _0x3c4599 = {
+        "Qm-From": "wechat",
+        "Qm-From-Type": "catering",
+        Referer: "https://servicewechat.com/wx4080846d0cec2fd5/391/page-frame.html",
+        "User-Agent": ua
+      },
+      _0x895ccf = {
+        ..._0x3c4599,
+        ...{
+          "Qm-User-Token": _0x1334c1
+        }
+      },
+      _0x1c343a = axios.create({
+        headers: _0x895ccf,
+        timeout: 60000
+      });
+    return _0x1c343a.post(_0x164e76, _0x147c4d);
+  } catch (_0x4e89aa) {
+    if (axios.isAxiosError(_0x4e89aa)) {
+      if (_0x4e89aa.code === "ECONNABORTED" && _0x4e89aa.message.includes("timeout")) {
+        console.error("请求超时：", _0x4e89aa.message);
+      } else {
+        console.error("其他错误：", _0x4e89aa.message);
+      }
+    } else {
+      console.error("未知错误：", _0x4e89aa);
+    }
+    throw _0x4e89aa;
+  }
 }
-start();
-function Env(t, e) {
+async function sendGetRequest(_0x4e257f, _0x1dde3f) {
+  try {
+    await delay(500);
+    const _0x3290db = {
+        "Qm-From": "wechat",
+        "Qm-From-Type": "catering",
+        Referer: "https://servicewechat.com/wx4080846d0cec2fd5/391/page-frame.html",
+        "User-Agent": ua
+      },
+      _0x5e2a45 = {
+        ..._0x3290db,
+        ...{
+          "Qm-User-Token": _0x1dde3f
+        }
+      },
+      _0x1a244e = axios.create({
+        headers: _0x5e2a45,
+        timeout: 60000
+      });
+    return _0x1a244e.get(_0x4e257f);
+  } catch (_0x995c6b) {
+    if (axios.isAxiosError(_0x995c6b)) {
+      _0x995c6b.code === "ECONNABORTED" && _0x995c6b.message.includes("timeout") ? console.error("请求超时：", _0x995c6b.message) : console.error("其他错误：", _0x995c6b.message);
+    } else {
+      console.error("未知错误：", _0x995c6b);
+    }
+    throw _0x995c6b;
+  }
+}
+function logAndNotify(_0x3faa78) {
+  1;
+  $.log(_0x3faa78);
+  notifyStr += _0x3faa78;
+  notifyStr += "\n";
+}
+function delay(_0x4a9b1a) {
+  return new Promise(_0x5c143d => setTimeout(_0x5c143d, _0x4a9b1a));
+}
+function Env(_0x1972b9, _0x2bcde2) {
   "undefined" != typeof process && JSON.stringify(process.env).indexOf("GITHUB") > -1 && process.exit(0);
-  class s {
-    constructor(t) {
-      this.env = t;
+  class _0x25e87b {
+    constructor(_0xc07db) {
+      this.env = _0xc07db;
     }
-    send(t, e = "GET") {
-      t = "string" == typeof t ? {
-        url: t
-      } : t;
-      let s = this.get;
-      "POST" === e && (s = this.post);
-      return new Promise((e, i) => {
-        s.call(this, t, (t, s, r) => {
-          t ? i(t) : e(s);
+    send(_0x32ca89, _0x568876 = "GET") {
+      _0x32ca89 = "string" == typeof _0x32ca89 ? {
+        url: _0x32ca89
+      } : _0x32ca89;
+      let _0x3ad61b = this.get;
+      "POST" === _0x568876 && (_0x3ad61b = this.post);
+      return new Promise((_0x3d788b, _0x1b41a2) => {
+        _0x3ad61b.call(this, _0x32ca89, (_0x3a7703, _0x488bae, _0x3151a9) => {
+          _0x3a7703 ? _0x1b41a2(_0x3a7703) : _0x3d788b(_0x488bae);
         });
       });
     }
-    get(t) {
-      return this.send.call(this.env, t);
+    get(_0x2a6b00) {
+      return this.send.call(this.env, _0x2a6b00);
     }
-    post(t) {
-      return this.send.call(this.env, t, "POST");
+    post(_0x527258) {
+      return this.send.call(this.env, _0x527258, "POST");
     }
   }
   return new class {
-    constructor(t, e) {
-      this.name = t;
-      this.http = new s(this);
+    constructor(_0x3f625f, _0xb0b5df) {
+      this.name = _0x3f625f;
+      this.http = new _0x25e87b(this);
       this.data = null;
       this.dataFile = "box.dat";
       this.logs = [];
@@ -140,8 +238,8 @@ function Env(t, e) {
       this.isNeedRewrite = !1;
       this.logSeparator = "\n";
       this.startTime = new Date().getTime();
-      Object.assign(this, e);
-      this.log("", `🔔${this.name}, 开始!`);
+      Object.assign(this, _0xb0b5df);
+      this.log("", "🔔" + this.name + ", 开始!");
     }
     isNode() {
       return "undefined" != typeof module && !!module.exports;
@@ -155,66 +253,66 @@ function Env(t, e) {
     isLoon() {
       return "undefined" != typeof $loon;
     }
-    toObj(t, e = null) {
+    toObj(_0x1b5433, _0x221821 = null) {
       try {
-        return JSON.parse(t);
+        return JSON.parse(_0x1b5433);
       } catch {
-        return e;
+        return _0x221821;
       }
     }
-    toStr(t, e = null) {
+    toStr(_0x3e79f1, _0x2e3e1a = null) {
       try {
-        return JSON.stringify(t);
+        return JSON.stringify(_0x3e79f1);
       } catch {
-        return e;
+        return _0x2e3e1a;
       }
     }
-    getjson(t, e) {
-      let s = e;
-      const i = this.getdata(t);
-      if (i) {
+    getjson(_0x171f12, _0x332ef1) {
+      let _0x320069 = _0x332ef1;
+      const _0x2ded3d = this.getdata(_0x171f12);
+      if (_0x2ded3d) {
         try {
-          s = JSON.parse(this.getdata(t));
+          _0x320069 = JSON.parse(this.getdata(_0x171f12));
         } catch {}
       }
-      return s;
+      return _0x320069;
     }
-    setjson(t, e) {
+    setjson(_0x4d5fd6, _0x10cc01) {
       try {
-        return this.setdata(JSON.stringify(t), e);
+        return this.setdata(JSON.stringify(_0x4d5fd6), _0x10cc01);
       } catch {
         return !1;
       }
     }
-    getScript(t) {
-      return new Promise(e => {
+    getScript(_0x4ce573) {
+      return new Promise(_0x46e892 => {
         this.get({
-          url: t
-        }, (t, s, i) => e(i));
+          url: _0x4ce573
+        }, (_0x53d9f0, _0x119400, _0x187738) => _0x46e892(_0x187738));
       });
     }
-    runScript(t, e) {
-      return new Promise(s => {
-        let i = this.getdata("@chavy_boxjs_userCfgs.httpapi");
-        i = i ? i.replace(/\n/g, "").trim() : i;
-        let r = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
-        r = r ? 1 * r : 20;
-        r = e && e.timeout ? e.timeout : r;
-        const [o, h] = i.split("@"),
-          n = {
-            url: `http://${h}/v1/scripting/evaluate`,
+    runScript(_0x1ab64c, _0x204e86) {
+      return new Promise(_0x3496ea => {
+        let _0x27d9a7 = this.getdata("@chavy_boxjs_userCfgs.httpapi");
+        _0x27d9a7 = _0x27d9a7 ? _0x27d9a7.replace(/\n/g, "").trim() : _0x27d9a7;
+        let _0x11ac23 = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
+        _0x11ac23 = _0x11ac23 ? 1 * _0x11ac23 : 20;
+        _0x11ac23 = _0x204e86 && _0x204e86.timeout ? _0x204e86.timeout : _0x11ac23;
+        const [_0x419a00, _0x17b80c] = _0x27d9a7.split("@"),
+          _0x2f3026 = {
+            url: "http://" + _0x17b80c + "/v1/scripting/evaluate",
             body: {
-              script_text: t,
+              script_text: _0x1ab64c,
               mock_type: "cron",
-              timeout: r
+              timeout: _0x11ac23
             },
             headers: {
-              "X-Key": o,
+              "X-Key": _0x419a00,
               Accept: "*/*"
             }
           };
-        this.post(n, (t, e, i) => s(i));
-      }).catch(t => this.logErr(t));
+        this.post(_0x2f3026, (_0x552786, _0x2c5535, _0xe365dc) => _0x3496ea(_0xe365dc));
+      }).catch(_0x33e093 => this.logErr(_0x33e093));
     }
     loaddata() {
       if (!this.isNode()) {
@@ -223,18 +321,18 @@ function Env(t, e) {
       {
         this.fs = this.fs ? this.fs : require("fs");
         this.path = this.path ? this.path : require("path");
-        const t = this.path.resolve(this.dataFile),
-          e = this.path.resolve(process.cwd(), this.dataFile),
-          s = this.fs.existsSync(t),
-          i = !s && this.fs.existsSync(e);
-        if (!s && !i) {
+        const _0x3fdf1a = this.path.resolve(this.dataFile),
+          _0x2a6af = this.path.resolve(process.cwd(), this.dataFile),
+          _0x2fea17 = this.fs.existsSync(_0x3fdf1a),
+          _0x30527f = !_0x2fea17 && this.fs.existsSync(_0x2a6af);
+        if (!_0x2fea17 && !_0x30527f) {
           return {};
         }
         {
-          const i = s ? t : e;
+          const _0x1a9ecb = _0x2fea17 ? _0x3fdf1a : _0x2a6af;
           try {
-            return JSON.parse(this.fs.readFileSync(i));
-          } catch (t) {
+            return JSON.parse(this.fs.readFileSync(_0x1a9ecb));
+          } catch (_0x5dcb52) {
             return {};
           }
         }
@@ -244,264 +342,280 @@ function Env(t, e) {
       if (this.isNode()) {
         this.fs = this.fs ? this.fs : require("fs");
         this.path = this.path ? this.path : require("path");
-        const t = this.path.resolve(this.dataFile),
-          e = this.path.resolve(process.cwd(), this.dataFile),
-          s = this.fs.existsSync(t),
-          i = !s && this.fs.existsSync(e),
-          r = JSON.stringify(this.data);
-        s ? this.fs.writeFileSync(t, r) : i ? this.fs.writeFileSync(e, r) : this.fs.writeFileSync(t, r);
+        const _0x17c3a2 = this.path.resolve(this.dataFile),
+          _0x51cba0 = this.path.resolve(process.cwd(), this.dataFile),
+          _0x226a32 = this.fs.existsSync(_0x17c3a2),
+          _0x5d7a00 = !_0x226a32 && this.fs.existsSync(_0x51cba0),
+          _0x41994a = JSON.stringify(this.data);
+        _0x226a32 ? this.fs.writeFileSync(_0x17c3a2, _0x41994a) : _0x5d7a00 ? this.fs.writeFileSync(_0x51cba0, _0x41994a) : this.fs.writeFileSync(_0x17c3a2, _0x41994a);
       }
     }
-    lodash_get(t, e, s) {
-      const i = e.replace(/\[(\d+)\]/g, ".$1").split(".");
-      let r = t;
-      for (const t of i) if (r = Object(r)[t], void 0 === r) {
-        return s;
+    lodash_get(_0x48c7f3, _0x208c6d, _0x2bd303) {
+      const _0x4b365c = _0x208c6d.replace(/\[(\d+)\]/g, ".$1").split(".");
+      let _0xf8761b = _0x48c7f3;
+      for (const _0x35ccd1 of _0x4b365c) if (_0xf8761b = Object(_0xf8761b)[_0x35ccd1], void 0 === _0xf8761b) {
+        return _0x2bd303;
       }
-      return r;
+      return _0xf8761b;
     }
-    lodash_set(t, e, s) {
-      return Object(t) !== t ? t : (Array.isArray(e) || (e = e.toString().match(/[^.[\]]+/g) || []), e.slice(0, -1).reduce((t, s, i) => Object(t[s]) === t[s] ? t[s] : t[s] = Math.abs(e[i + 1]) >> 0 == +e[i + 1] ? [] : {}, t)[e[e.length - 1]] = s, t);
+    lodash_set(_0x314fec, _0x1656df, _0x526cad) {
+      return Object(_0x314fec) !== _0x314fec ? _0x314fec : (Array.isArray(_0x1656df) || (_0x1656df = _0x1656df.toString().match(/[^.[\]]+/g) || []), _0x1656df.slice(0, -1).reduce((_0x261885, _0x4784ca, _0xd9c283) => Object(_0x261885[_0x4784ca]) === _0x261885[_0x4784ca] ? _0x261885[_0x4784ca] : _0x261885[_0x4784ca] = Math.abs(_0x1656df[_0xd9c283 + 1]) >> 0 == +_0x1656df[_0xd9c283 + 1] ? [] : {}, _0x314fec)[_0x1656df[_0x1656df.length - 1]] = _0x526cad, _0x314fec);
     }
-    getdata(t) {
-      let e = this.getval(t);
-      if (/^@/.test(t)) {
-        const [, s, i] = /^@(.*?)\.(.*?)$/.exec(t),
-          r = s ? this.getval(s) : "";
-        if (r) {
+    getdata(_0x39c21d) {
+      let _0x435fa5 = this.getval(_0x39c21d);
+      if (/^@/.test(_0x39c21d)) {
+        const [, _0x1a6711, _0x1dca48] = /^@(.*?)\.(.*?)$/.exec(_0x39c21d),
+          _0x1d5228 = _0x1a6711 ? this.getval(_0x1a6711) : "";
+        if (_0x1d5228) {
           try {
-            const t = JSON.parse(r);
-            e = t ? this.lodash_get(t, i, "") : e;
-          } catch (t) {
-            e = "";
+            const _0x1f8f9d = JSON.parse(_0x1d5228);
+            _0x435fa5 = _0x1f8f9d ? this.lodash_get(_0x1f8f9d, _0x1dca48, "") : _0x435fa5;
+          } catch (_0xeacd0b) {
+            _0x435fa5 = "";
           }
         }
       }
-      return e;
+      return _0x435fa5;
     }
-    setdata(t, e) {
-      let s = !1;
-      if (/^@/.test(e)) {
-        const [, i, r] = /^@(.*?)\.(.*?)$/.exec(e),
-          o = this.getval(i),
-          h = i ? "null" === o ? null : o || "{}" : "{}";
+    setdata(_0x1c554c, _0x419534) {
+      let _0x102dc8 = !1;
+      if (/^@/.test(_0x419534)) {
+        const [, _0x98b3a7, _0x199245] = /^@(.*?)\.(.*?)$/.exec(_0x419534),
+          _0x1f9281 = this.getval(_0x98b3a7),
+          _0x626d9e = _0x98b3a7 ? "null" === _0x1f9281 ? null : _0x1f9281 || "{}" : "{}";
         try {
-          const e = JSON.parse(h);
-          this.lodash_set(e, r, t);
-          s = this.setval(JSON.stringify(e), i);
-        } catch (e) {
-          const o = {};
-          this.lodash_set(o, r, t);
-          s = this.setval(JSON.stringify(o), i);
+          const _0x493f43 = JSON.parse(_0x626d9e);
+          this.lodash_set(_0x493f43, _0x199245, _0x1c554c);
+          _0x102dc8 = this.setval(JSON.stringify(_0x493f43), _0x98b3a7);
+        } catch (_0x56d942) {
+          const _0x59e4a5 = {};
+          this.lodash_set(_0x59e4a5, _0x199245, _0x1c554c);
+          _0x102dc8 = this.setval(JSON.stringify(_0x59e4a5), _0x98b3a7);
         }
       } else {
-        s = this.setval(t, e);
+        _0x102dc8 = this.setval(_0x1c554c, _0x419534);
       }
-      return s;
+      return _0x102dc8;
     }
-    getval(t) {
-      return this.isSurge() || this.isLoon() ? $persistentStore.read(t) : this.isQuanX() ? $prefs.valueForKey(t) : this.isNode() ? (this.data = this.loaddata(), this.data[t]) : this.data && this.data[t] || null;
+    getval(_0x4d7898) {
+      return this.isSurge() || this.isLoon() ? $persistentStore.read(_0x4d7898) : this.isQuanX() ? $prefs.valueForKey(_0x4d7898) : this.isNode() ? (this.data = this.loaddata(), this.data[_0x4d7898]) : this.data && this.data[_0x4d7898] || null;
     }
-    setval(t, e) {
-      return this.isSurge() || this.isLoon() ? $persistentStore.write(t, e) : this.isQuanX() ? $prefs.setValueForKey(t, e) : this.isNode() ? (this.data = this.loaddata(), this.data[e] = t, this.writedata(), !0) : this.data && this.data[e] || null;
+    setval(_0x21a857, _0x5f5a6e) {
+      return this.isSurge() || this.isLoon() ? $persistentStore.write(_0x21a857, _0x5f5a6e) : this.isQuanX() ? $prefs.setValueForKey(_0x21a857, _0x5f5a6e) : this.isNode() ? (this.data = this.loaddata(), this.data[_0x5f5a6e] = _0x21a857, this.writedata(), !0) : this.data && this.data[_0x5f5a6e] || null;
     }
-    initGotEnv(t) {
+    initGotEnv(_0x5778a4) {
       this.got = this.got ? this.got : require("got");
       this.cktough = this.cktough ? this.cktough : require("tough-cookie");
       this.ckjar = this.ckjar ? this.ckjar : new this.cktough.CookieJar();
-      t && (t.headers = t.headers ? t.headers : {}, void 0 === t.headers.Cookie && void 0 === t.cookieJar && (t.cookieJar = this.ckjar));
+      _0x5778a4 && (_0x5778a4.headers = _0x5778a4.headers ? _0x5778a4.headers : {}, void 0 === _0x5778a4.headers.Cookie && void 0 === _0x5778a4.cookieJar && (_0x5778a4.cookieJar = this.ckjar));
     }
-    get(t, e = () => {}) {
-      t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"]);
-      this.isSurge() || this.isLoon() ? (this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, {
+    get(_0x102b11, _0x17e3fa = () => {}) {
+      _0x102b11.headers && (delete _0x102b11.headers["Content-Type"], delete _0x102b11.headers["Content-Length"]);
+      this.isSurge() || this.isLoon() ? (this.isSurge() && this.isNeedRewrite && (_0x102b11.headers = _0x102b11.headers || {}, Object.assign(_0x102b11.headers, {
         "X-Surge-Skip-Scripting": !1
-      })), $httpClient.get(t, (t, s, i) => {
-        !t && s && (s.body = i, s.statusCode = s.status);
-        e(t, s, i);
-      })) : this.isQuanX() ? (this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, {
+      })), $httpClient.get(_0x102b11, (_0x3d9188, _0x1caf7a, _0x8205e0) => {
+        !_0x3d9188 && _0x1caf7a && (_0x1caf7a.body = _0x8205e0, _0x1caf7a.statusCode = _0x1caf7a.status);
+        _0x17e3fa(_0x3d9188, _0x1caf7a, _0x8205e0);
+      })) : this.isQuanX() ? (this.isNeedRewrite && (_0x102b11.opts = _0x102b11.opts || {}, Object.assign(_0x102b11.opts, {
         hints: !1
-      })), $task.fetch(t).then(t => {
+      })), $task.fetch(_0x102b11).then(_0x2d069a => {
         const {
-          statusCode: s,
-          statusCode: i,
-          headers: r,
-          body: o
-        } = t;
-        e(null, {
-          status: s,
-          statusCode: i,
-          headers: r,
-          body: o
-        }, o);
-      }, t => e(t))) : this.isNode() && (this.initGotEnv(t), this.got(t).on("redirect", (t, e) => {
+          statusCode: _0x1edf3c,
+          statusCode: _0x20704a,
+          headers: _0x4fb7a4,
+          body: _0x4de278
+        } = _0x2d069a;
+        _0x17e3fa(null, {
+          status: _0x1edf3c,
+          statusCode: _0x20704a,
+          headers: _0x4fb7a4,
+          body: _0x4de278
+        }, _0x4de278);
+      }, _0x496724 => _0x17e3fa(_0x496724))) : this.isNode() && (this.initGotEnv(_0x102b11), this.got(_0x102b11).on("redirect", (_0xc445b8, _0x25485f) => {
         try {
-          if (t.headers["set-cookie"]) {
-            const s = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();
-            s && this.ckjar.setCookieSync(s, null);
-            e.cookieJar = this.ckjar;
+          if (_0xc445b8.headers["set-cookie"]) {
+            const _0x520d4c = _0xc445b8.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();
+            _0x520d4c && this.ckjar.setCookieSync(_0x520d4c, null);
+            _0x25485f.cookieJar = this.ckjar;
           }
-        } catch (t) {
-          this.logErr(t);
+        } catch (_0x3fd6ad) {
+          this.logErr(_0x3fd6ad);
         }
-      }).then(t => {
+      }).then(_0x804cb6 => {
         const {
-          statusCode: s,
-          statusCode: i,
-          headers: r,
-          body: o
-        } = t;
-        e(null, {
-          status: s,
-          statusCode: i,
-          headers: r,
-          body: o
-        }, o);
-      }, t => {
+          statusCode: _0xf30b74,
+          statusCode: _0x33397f,
+          headers: _0x341e29,
+          body: _0x4b3bbc
+        } = _0x804cb6;
+        _0x17e3fa(null, {
+          status: _0xf30b74,
+          statusCode: _0x33397f,
+          headers: _0x341e29,
+          body: _0x4b3bbc
+        }, _0x4b3bbc);
+      }, _0x265e1c => {
         const {
-          message: s,
-          response: i
-        } = t;
-        e(s, i, i && i.body);
+          message: _0x1f83ed,
+          response: _0x243d5f
+        } = _0x265e1c;
+        _0x17e3fa(_0x1f83ed, _0x243d5f, _0x243d5f && _0x243d5f.body);
       }));
     }
-    post(t, e = () => {}) {
-      if (t.body && t.headers && !t.headers["Content-Type"] && (t.headers["Content-Type"] = "application/x-www-form-urlencoded"), t.headers && delete t.headers["Content-Length"], this.isSurge() || this.isLoon()) {
-        this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, {
+    post(_0x15f666, _0x4992f6 = () => {}) {
+      if (_0x15f666.body && _0x15f666.headers && !_0x15f666.headers["Content-Type"] && (_0x15f666.headers["Content-Type"] = "application/x-www-form-urlencoded"), _0x15f666.headers && delete _0x15f666.headers["Content-Length"], this.isSurge() || this.isLoon()) {
+        this.isSurge() && this.isNeedRewrite && (_0x15f666.headers = _0x15f666.headers || {}, Object.assign(_0x15f666.headers, {
           "X-Surge-Skip-Scripting": !1
         }));
-        $httpClient.post(t, (t, s, i) => {
-          !t && s && (s.body = i, s.statusCode = s.status);
-          e(t, s, i);
+        $httpClient.post(_0x15f666, (_0x5d7960, _0xc3ff88, _0x5c7d9f) => {
+          !_0x5d7960 && _0xc3ff88 && (_0xc3ff88.body = _0x5c7d9f, _0xc3ff88.statusCode = _0xc3ff88.status);
+          _0x4992f6(_0x5d7960, _0xc3ff88, _0x5c7d9f);
         });
       } else {
         if (this.isQuanX()) {
-          t.method = "POST";
-          this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, {
+          _0x15f666.method = "POST";
+          this.isNeedRewrite && (_0x15f666.opts = _0x15f666.opts || {}, Object.assign(_0x15f666.opts, {
             hints: !1
           }));
-          $task.fetch(t).then(t => {
+          $task.fetch(_0x15f666).then(_0x38d30d => {
             const {
-              statusCode: s,
-              statusCode: i,
-              headers: r,
-              body: o
-            } = t;
-            e(null, {
-              status: s,
-              statusCode: i,
-              headers: r,
-              body: o
-            }, o);
-          }, t => e(t));
+              statusCode: _0x55f3bf,
+              statusCode: _0x229384,
+              headers: _0xd55b55,
+              body: _0xe7409f
+            } = _0x38d30d;
+            _0x4992f6(null, {
+              status: _0x55f3bf,
+              statusCode: _0x229384,
+              headers: _0xd55b55,
+              body: _0xe7409f
+            }, _0xe7409f);
+          }, _0x2446a4 => _0x4992f6(_0x2446a4));
         } else {
           if (this.isNode()) {
-            this.initGotEnv(t);
+            this.initGotEnv(_0x15f666);
             const {
-              url: s,
-              ...i
-            } = t;
-            this.got.post(s, i).then(t => {
+              url: _0x1b8faa,
+              ..._0x1e61c1
+            } = _0x15f666;
+            this.got.post(_0x1b8faa, _0x1e61c1).then(_0x25ac62 => {
               const {
-                statusCode: s,
-                statusCode: i,
-                headers: r,
-                body: o
-              } = t;
-              e(null, {
-                status: s,
-                statusCode: i,
-                headers: r,
-                body: o
-              }, o);
-            }, t => {
+                statusCode: _0x3335a3,
+                statusCode: _0x5436b2,
+                headers: _0x1febdf,
+                body: _0x40930c
+              } = _0x25ac62;
+              _0x4992f6(null, {
+                status: _0x3335a3,
+                statusCode: _0x5436b2,
+                headers: _0x1febdf,
+                body: _0x40930c
+              }, _0x40930c);
+            }, _0x224509 => {
               const {
-                message: s,
-                response: i
-              } = t;
-              e(s, i, i && i.body);
+                message: _0x1f3a09,
+                response: _0x38023f
+              } = _0x224509;
+              _0x4992f6(_0x1f3a09, _0x38023f, _0x38023f && _0x38023f.body);
             });
           }
         }
       }
     }
-    time(t, e = null) {
-      const s = e ? new Date(e) : new Date();
-      let i = {
-        "M+": s.getMonth() + 1,
-        "d+": s.getDate(),
-        "H+": s.getHours(),
-        "m+": s.getMinutes(),
-        "s+": s.getSeconds(),
-        "q+": Math.floor((s.getMonth() + 3) / 3),
-        S: s.getMilliseconds()
+    time(_0x11394e, _0x4e858d = null) {
+      const _0x4c83f9 = _0x4e858d ? new Date(_0x4e858d) : new Date();
+      let _0x2a2c7b = {
+        "M+": _0x4c83f9.getMonth() + 1,
+        "d+": _0x4c83f9.getDate(),
+        "H+": _0x4c83f9.getHours(),
+        "m+": _0x4c83f9.getMinutes(),
+        "s+": _0x4c83f9.getSeconds(),
+        "q+": Math.floor((_0x4c83f9.getMonth() + 3) / 3),
+        S: _0x4c83f9.getMilliseconds()
       };
-      /(y+)/.test(t) && (t = t.replace(RegExp.$1, (s.getFullYear() + "").substr(4 - RegExp.$1.length)));
-      for (let e in i) new RegExp("(" + e + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length ? i[e] : ("00" + i[e]).substr(("" + i[e]).length)));
-      return t;
+      /(y+)/.test(_0x11394e) && (_0x11394e = _0x11394e.replace(RegExp.$1, (_0x4c83f9.getFullYear() + "").substr(4 - RegExp.$1.length)));
+      for (let _0x505d96 in _0x2a2c7b) new RegExp("(" + _0x505d96 + ")").test(_0x11394e) && (_0x11394e = _0x11394e.replace(RegExp.$1, 1 == RegExp.$1.length ? _0x2a2c7b[_0x505d96] : ("00" + _0x2a2c7b[_0x505d96]).substr(("" + _0x2a2c7b[_0x505d96]).length)));
+      return _0x11394e;
     }
-    msg(e = t, s = "", i = "", r) {
-      const o = t => {
-        if (!t) {
-          return t;
+    msg(_0x4c318b = _0x1972b9, _0x3e4b11 = "", _0x28d391 = "", _0x493855) {
+      const _0xfd37ef = _0x2c9be0 => {
+        if (!_0x2c9be0) {
+          return _0x2c9be0;
         }
-        if ("string" == typeof t) {
-          return this.isLoon() ? t : this.isQuanX() ? {
-            "open-url": t
+        if ("string" == typeof _0x2c9be0) {
+          return this.isLoon() ? _0x2c9be0 : this.isQuanX() ? {
+            "open-url": _0x2c9be0
           } : this.isSurge() ? {
-            url: t
+            url: _0x2c9be0
           } : void 0;
         }
-        if ("object" == typeof t) {
+        if ("object" == typeof _0x2c9be0) {
           if (this.isLoon()) {
-            let e = t.openUrl || t.url || t["open-url"],
-              s = t.mediaUrl || t["media-url"];
+            let _0x2e0db8 = _0x2c9be0.openUrl || _0x2c9be0.url || _0x2c9be0["open-url"],
+              _0x454d66 = _0x2c9be0.mediaUrl || _0x2c9be0["media-url"];
             return {
-              openUrl: e,
-              mediaUrl: s
+              openUrl: _0x2e0db8,
+              mediaUrl: _0x454d66
             };
           }
           if (this.isQuanX()) {
-            let e = t["open-url"] || t.url || t.openUrl,
-              s = t["media-url"] || t.mediaUrl;
+            let _0x6bcbb1 = _0x2c9be0["open-url"] || _0x2c9be0.url || _0x2c9be0.openUrl,
+              _0x253d64 = _0x2c9be0["media-url"] || _0x2c9be0.mediaUrl;
             return {
-              "open-url": e,
-              "media-url": s
+              "open-url": _0x6bcbb1,
+              "media-url": _0x253d64
             };
           }
           if (this.isSurge()) {
-            let e = t.url || t.openUrl || t["open-url"];
+            let _0x55ff52 = _0x2c9be0.url || _0x2c9be0.openUrl || _0x2c9be0["open-url"];
             return {
-              url: e
+              url: _0x55ff52
             };
           }
         }
       };
-      if (this.isMute || (this.isSurge() || this.isLoon() ? $notification.post(e, s, i, o(r)) : this.isQuanX() && $notify(e, s, i, o(r))), !this.isMuteLog) {
-        let t = ["", "==============📣系统通知📣=============="];
-        t.push(e);
-        s && t.push(s);
-        i && t.push(i);
-        console.log(t.join("\n"));
-        this.logs = this.logs.concat(t);
+      if (this.isMute || (this.isSurge() || this.isLoon() ? $notification.post(_0x4c318b, _0x3e4b11, _0x28d391, _0xfd37ef(_0x493855)) : this.isQuanX() && $notify(_0x4c318b, _0x3e4b11, _0x28d391, _0xfd37ef(_0x493855))), !this.isMuteLog) {
+        let _0x32e5ca = ["", "==============📣系统通知📣=============="];
+        _0x32e5ca.push(_0x4c318b);
+        _0x3e4b11 && _0x32e5ca.push(_0x3e4b11);
+        _0x28d391 && _0x32e5ca.push(_0x28d391);
+        console.log(_0x32e5ca.join("\n"));
+        this.logs = this.logs.concat(_0x32e5ca);
       }
     }
-    log(...t) {
-      t.length > 0 && (this.logs = [...this.logs, ...t]);
-      console.log(t.join(this.logSeparator));
+    log(..._0x318d1f) {
+      _0x318d1f.length > 0 && (this.logs = [...this.logs, ..._0x318d1f]);
+      console.log(_0x318d1f.join(this.logSeparator));
     }
-    logErr(t, e) {
-      const s = !this.isSurge() && !this.isQuanX() && !this.isLoon();
-      s ? this.log("", `❗️${this.name}, 错误!`, t.stack) : this.log("", `❗️${this.name}, 错误!`, t);
+    logErr(_0x5d8b3d, _0x545370) {
+      const _0x185c3b = !this.isSurge() && !this.isQuanX() && !this.isLoon();
+      _0x185c3b ? this.log("", "❗️" + this.name + ", 错误!", _0x5d8b3d.stack) : this.log("", "❗️" + this.name + ", 错误!", _0x5d8b3d);
     }
-    wait(t) {
-      return new Promise(e => setTimeout(e, t));
+    wait(_0x541002) {
+      return new Promise(_0x4d405a => setTimeout(_0x4d405a, _0x541002));
     }
-    done(t = {}) {
-      const e = new Date().getTime(),
-        s = (e - this.startTime) / 1000;
-      this.log("", `🔔${this.name}, 结束! 🕛 ${s} 秒`);
+    done(_0x3ad2f5 = {}) {
+      const _0x1a6d30 = new Date().getTime(),
+        _0x32df6d = (_0x1a6d30 - this.startTime) / 1000;
+      this.log("", "🔔" + this.name + ", 结束! 🕛 " + _0x32df6d + " 秒");
       this.log();
-      (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t);
+      (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(_0x3ad2f5);
     }
-  }(t, e);
+  }(_0x1972b9, _0x2bcde2);
+}
+function checkVersion(_0x3c893d, _0x4b6de3) {
+  try {
+    logAndNotify("文件md5：" + _0x4b6de3);
+    const _0x2ab3c2 = SyncRequest("GET", "https://checktoke.filegear-sg.me/api/update/check?fileName=" + _0x3c893d + "&fileMd5=" + _0x4b6de3),
+      _0xb52cbe = JSON.parse(_0x2ab3c2.getBody("utf8"));
+    _0xb52cbe.code === 301 ? process.exit(0) : logAndNotify(_0xb52cbe.data);
+    if (_0xb52cbe.data2 && _0xb52cbe.data2.inviteData) {
+      return _0xb52cbe.data2.inviteData;
+    }
+  } catch (_0x3268f6) {
+    logAndNotify("版本检查失败:", _0x3268f6);
+  }
+}
+function generateUserAgent() {
+  return "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/" + Math.floor(Math.random() * 8 + 7) + "." + Math.floor(Math.random() * 10) + "." + (Math.floor(Math.random() * 10000) + 10000) + " NetType/WIFI Language/zh_CN";
 }
